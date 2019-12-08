@@ -93,7 +93,8 @@ def error_location_initialization(message):
 
 @bot.message_handler(commands=["restart"])
 def reset(message):
-    bot.send_message(message.chat.id, "All your settings were reset. /start again.")
+    keyboard = types.ReplyKeyboardRemove(selective=False)
+    bot.send_message(message.chat.id, "All your settings were reset. /start again.", reply_markup=keyboard)
     try:
         database.reset(message.chat.id, )
         database.set_user_state(0, message.chat.id, )

@@ -48,7 +48,7 @@ def obtain_weather(chat):
     data = json.loads(response.content.decode('utf8').replace("'", '"'))
     forecast = {"description": weatherEncryption[data['weather'][0]['icon'][0:2]],
                 "temperature": (round(data['main']['temp_min']) - 273, round(data['main']['temp_max']) - 273),
-                "wind": "No wind" if data['wind']['speed'] < 0.2 else "Windy"}
+                "wind": "No wind" if data['wind']['speed'] < 0.5 else "Windy"}
 
     return forecast
 
@@ -112,7 +112,8 @@ def reset_time(message):
 @bot.message_handler(commands=["time"])
 def set_time_of_daily_forecast(message):
     bot.send_message(message.chat.id, "Send me time when I should send you message "
-                                      "with weather forecast using format HH:MM : ")
+                                      "with weather forecast using format HH:MM : ",
+                     reply_markup=stop_keyboard)
     database.set_user_state(3, message.chat.id, )
 
 

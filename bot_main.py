@@ -68,7 +68,25 @@ def update_location(message):
 
 @bot.message_handler(commands=["time"])
 def set_time_of_daily_forecast(message):
-    bot.send_message(message.chat.id, "Sorry, in beta!")
+    bot.send_message(message.chat.id, "Send me time where I should send you message "
+                                      "with weather forecast using format HH:MM")
+    database.set_user_state(3, message.chat.id, )
+
+
+@bot.message_handler(func=lambda message: database.get_current_state(message.from_user.id) == 3)
+def error_location_initialization(message):
+    if re.match("[0-2][0-9]:[0-5][0-9]", message.text):
+        if int(message.text[0:2]) < 24:
+            bot.send_message(message.chat.id, f"Time was successfully set!\n"
+                                              f"I'll send you daily forecast everyday at {message.text}")
+            database.update_time(message.text, message.chat.id)
+            database.set_user_state(2, message.chat.id, )
+        else:
+            bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
+                                              f"Send time in format HH:MM, for example 19:54")
+    else:
+        bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
+                                          f"Send time in format HH:MM, for example 19:54")
 
 
 @bot.message_handler(commands=["restart"])

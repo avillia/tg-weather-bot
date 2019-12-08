@@ -61,8 +61,6 @@ def forecast_message(description, temperature, wind):
 
 @bot.message_handler(commands=["start"])
 def start(message):
-
-
     try:
         database.reset_user(message.chat.id, )
     except TypeError:
@@ -87,6 +85,17 @@ def reset(message):
         database.set_user_state(0, message.chat.id, )
     except TypeError:
         pass
+
+
+@bot.message_handler(commands=["weather"])
+def weather_command(message):
+    try:
+        forecast = obtain_weather(message.chat.id)
+        bot.send_message(message.chat.id, forecast_message(**forecast))
+    except TypeError:
+        bot.send_message(message.chat.id, "Nothing is configured yet! Use but bellow to set your location")
+    except KeyError:
+        bot.send_message(message.chat.id, "Nothing is configured yet! Use but bellow to set your location")
 
 
 @bot.message_handler(commands=["stop"],

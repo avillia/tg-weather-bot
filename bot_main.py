@@ -35,8 +35,10 @@ def start(message):
                      "Hello there!\nI'm bot that can send you information about weather in your place!"
                      " Just send me your location via button under text field:",
                      reply_markup=keyboard)
-
-    database.add_new_user(message.chat.id)
+    try:
+        database.add_new_user(message.chat.id)
+    except sqlite3.IntegrityError:
+        pass
     database.set_user_state(1, message.chat.id, )
 
 

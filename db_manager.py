@@ -2,6 +2,10 @@ import sqlite3
 import os
 
 
+def extract(lst):
+    return list(map(lambda el: el[0], lst))
+
+
 class SQLighter:
 
     def __init__(self):
@@ -50,9 +54,29 @@ class SQLighter:
                                 WHERE telegram_id = (?)""", (time, telegram_id,))
             db.commit()
 
-    def reset(self, telegram_id):
+    def remove_user_time(self, telegram_id):
+        with sqlite3.connect(self.db_file) as db:
+            dbcursor = db.cursor()
+            dbcursor.execute("""UPDATE users 
+                                SET daily_forecast_time = NULL
+                                WHERE telegram_id = (?)""", (telegram_id,))
+            db.commit()
+
+    def reset_user(self, telegram_id):
         with sqlite3.connect(self.db_file) as db:
             dbcursor = db.cursor()
             dbcursor.execute("""DELETE FROM users
                                 WHERE telegram_id = (?)""", (telegram_id,))
             db.commit()
+
+    def get_all_times(self):
+        with sqlite3.connect(self.db_file) as db:
+            dbcursor = db.cursor()
+            return extract(dbcursor.execute('SELECT daily_forecast_time FROM users',).fetchall())
+
+    def get_users_by_time(self, time):
+        with sqlite3.connect(self.db_file) as db:
+            dbcursor = db.cursor()
+            return extract(dbcursor.execute('SELECT telegram_id FROM users WHERE daily_forecast_time = (?)',
+                           (time,)).fetchall())
+

@@ -53,14 +53,15 @@ def time_schedule():
 @server.route("/avillia-weather-bot.herokuapp.com/")
 def obtain_weather(chat):
     coords = database.get_current_coords(chat)
-    response = request.get(
-        f"https://api.openweathermap.org/"
-        f"data/2.5/weather?lat={coords[0]}&lon={coords[1]}&appid=ef1d46cf281271e9a6cd05ac3fc2d2f7")
+    with server.app_context():
+        response = request.get(
+            f"https://api.openweathermap.org/"
+            f"data/2.5/weather?lat={coords[0]}&lon={coords[1]}&appid=ef1d46cf281271e9a6cd05ac3fc2d2f7")
 
     data = json.loads(response.content.decode('utf8').replace("'", '"'))
     forecast = {"description": weatherEncryption[data['weather'][0]['icon'][0:2]],
                 "temperature": (round(data['main']['temp_min']) - 273, round(data['main']['temp_max']) - 273),
-                "wind": "No wind" if data['wind']['speed'] < 0.5 else "Windy"}
+                "wind": "No wind" if data['wind']['speed'] < 0.3 else "Windy"}
 
     return forecast
 

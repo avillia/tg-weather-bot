@@ -4,6 +4,7 @@ from db_manager import *
 from flask import Flask, request
 from apscheduler.schedulers.background import BackgroundScheduler
 import re, json, time
+import requests
 
 
 TOKEN = "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc"
@@ -51,10 +52,9 @@ def time_schedule():
 
 def obtain_weather(chat):
     coords = database.get_current_coords(chat)
-    with server.app_context():
-        response = request.get(
-            f"https://api.openweathermap.org/"
-            f"data/2.5/weather?lat={coords[0]}&lon={coords[1]}&appid=ef1d46cf281271e9a6cd05ac3fc2d2f7")
+    response = requests.get(
+        f"https://api.openweathermap.org/"
+        f"data/2.5/weather?lat={coords[0]}&lon={coords[1]}&appid=ef1d46cf281271e9a6cd05ac3fc2d2f7")
 
     data = json.loads(response.content.decode('utf8').replace("'", '"'))
     forecast = {"description": weatherEncryption[data['weather'][0]['icon'][0:2]],
@@ -203,7 +203,7 @@ def getMessage():
 def webhook():
     bot.remove_webhook()
     bot.set_webhook(url='https://avillia-weather-bot.herokuapp.com/' + TOKEN)
-    return "!", 200
+    return "<b>Deployed and launched successfully!</b>", 200
 
 
 if __name__ == "__main__":

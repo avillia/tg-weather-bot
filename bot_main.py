@@ -3,7 +3,7 @@ from telebot import types
 from db_manager import *
 from flask import Flask, request
 from apscheduler.schedulers.background import BackgroundScheduler
-import re, json, atexit, time
+import re, json, time
 
 
 TOKEN = "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc"
@@ -42,6 +42,7 @@ stop_keyboard.add(stop_button)
 empty_keyboard = types.ReplyKeyboardRemove(selective=False)
 
 
+@server.route("https://avillia-weather-bot.herokuapp.com/")
 def time_schedule():
     current_time = time.asctime().split()[3][0:5]
     if current_time in database.get_all_times():
@@ -49,6 +50,7 @@ def time_schedule():
             bot.send_message(user, forecast_message(**obtain_weather(user)))
 
 
+@server.route("https://avillia-weather-bot.herokuapp.com/")
 def obtain_weather(chat):
     coords = database.get_current_coords(chat)
     response = request.get(

@@ -1,11 +1,13 @@
-from bot_stats import TOKEN
 import telebot
 from telebot import types
 from db_manager import *
-import re, requests, json
+from flask import Flask, request
+import re, json
 
 
+TOKEN = "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc"
 bot = telebot.TeleBot(TOKEN)
+server = Flask(__name__)
 database = SQLighter()
 
 weatherEncryption = {"01": ("\U00002600", "Sunny"),
@@ -41,7 +43,7 @@ empty_keyboard = types.ReplyKeyboardRemove(selective=False)
 
 def obtain_weather(chat):
     coords = database.get_current_coords(chat)
-    response = requests.get(
+    response = request.get(
         f"https://api.openweathermap.org/"
         f"data/2.5/weather?lat={coords[0]}&lon={coords[1]}&appid=ef1d46cf281271e9a6cd05ac3fc2d2f7")
 
@@ -182,5 +184,18 @@ def non_commands_responding(message):
         bot.send_message(message.chat.id, "???")
 
 
-if __name__ == '__main__':
-    bot.infinity_polling()
+@server.route('/' + TOKEN, methods=['POST'])
+def getMessage():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
+
+
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url='https://your_heroku_project.com/' + TOKEN)
+    return "!", 200
+
+
+if __name__ == "__main__":
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))

@@ -10,6 +10,20 @@ class SQLighter:
 
     def __init__(self):
         self.db_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'weather.db')
+        try:
+            with sqlite3.connect(self.db_file) as db:
+                dbcursor = db.cursor()
+                dbcursor.execute("""CREATE TABLE "users" (
+                                    "telegram_id"	INTEGER NOT NULL UNIQUE,
+                                    "current_state"	INTEGER DEFAULT 0,
+                                    "last_saved_longitude"	REAL,
+                                    "last_saved_latitude"	REAL,
+                                    "daily_forecast_time"	TEXT,
+                                    PRIMARY KEY("telegram_id")
+                                )""")
+                db.commit()
+        except sqlite3.OperationalError:
+            pass
 
     def add_new_user(self, telegram_id):
         with sqlite3.connect(self.db_file) as db:

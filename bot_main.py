@@ -2,7 +2,8 @@ import telebot
 from telebot import types
 from db_manager import *
 from flask import Flask, request
-import re, json
+from apscheduler.schedulers.background import BackgroundScheduler
+import re, json, atexit, time
 
 
 TOKEN = "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc"
@@ -39,6 +40,13 @@ stop_button = types.KeyboardButton(text=stop_button_text, )
 stop_keyboard.add(stop_button)
 
 empty_keyboard = types.ReplyKeyboardRemove(selective=False)
+
+
+def time_schedule():
+    current_time = time.asctime().split()[3][0:5]
+    if current_time in database.get_all_times():
+        for user in database.get_users_by_time(current_time):
+            bot.send_message(user, forecast_message(**obtain_weather(user)))
 
 
 def obtain_weather(chat):
@@ -198,4 +206,7 @@ def webhook():
 
 
 if __name__ == "__main__":
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=time_schedule, trigger="interval", seconds=60)
+    scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))

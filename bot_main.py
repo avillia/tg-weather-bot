@@ -42,7 +42,7 @@ stop_keyboard.add(stop_button)
 empty_keyboard = types.ReplyKeyboardRemove(selective=False)
 
 
-@server.route("https://avillia-weather-bot.herokuapp.com/")
+@server.route("/avillia-weather-bot.herokuapp.com/")
 def time_schedule():
     current_time = time.asctime().split()[3][0:5]
     if current_time in database.get_all_times():
@@ -50,7 +50,7 @@ def time_schedule():
             bot.send_message(user, forecast_message(**obtain_weather(user)))
 
 
-@server.route("https://avillia-weather-bot.herokuapp.com/")
+@server.route("/avillia-weather-bot.herokuapp.com/")
 def obtain_weather(chat):
     coords = database.get_current_coords(chat)
     response = request.get(

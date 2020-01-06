@@ -165,11 +165,11 @@ def updating_location(message):
 def time_processing(message):
     if re.match("[0-2][0-9]:[0-5][0-9]", message.text):
         if int(message.text[:2]) < 24:
-            time_with_offset = f"{(int(message.text[:2]) + database.get_time_offset(message.chat.id)) % 24}:{message.text[3:]}"
+            time_with_offset = f"{(int(message.text[:2]) - database.get_time_offset(message.chat.id)) % 24}:{message.text[3:]}"
             database.update_time(time_with_offset, message.chat.id, )
             database.set_user_state(2, message.chat.id, )
             bot.send_message(message.chat.id, f"Time was successfully set!\n"
-                                              f"I'll send you daily forecast everyday at {time_with_offset}. "
+                                              f"I'll send you daily forecast everyday at {message.text}. "
                                               f"You can easily discard it with /stop command.",
                              reply_markup=default_keyboard)
         else:

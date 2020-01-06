@@ -19,8 +19,9 @@ class SQLighter:
                                     "last_saved_longitude"	REAL,
                                     "last_saved_latitude"	REAL,
                                     "daily_forecast_time"	TEXT,
+                                    "time_offset"	INTEGER DEFAULT 0,
                                     PRIMARY KEY("telegram_id")
-                                )""")
+                                    );""")
                 db.commit()
         except sqlite3.OperationalError:
             pass
@@ -94,3 +95,16 @@ class SQLighter:
             return extract(dbcursor.execute('SELECT telegram_id FROM users WHERE daily_forecast_time = (?)',
                            (time,)).fetchall())
 
+    def update_time_offset(self, time_offset, telegram_id):
+        with sqlite3.connect(self.db_file) as db:
+            dbcursor = db.cursor()
+            dbcursor.execute("""UPDATE users 
+                                SET time_offset = (?)
+                                WHERE telegram_id = (?)""", (time_offset, telegram_id,))
+            db.commit()
+
+    def get_time_offset(self, telegram_id):
+        with sqlite3.connect(self.db_file) as db:
+            dbcursor = db.cursor()
+            return dbcursor.execute('SELECT time_offset FROM users WHERE telegram_id = (?)',
+                                    (telegram_id,)).fetchone()[0]

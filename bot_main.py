@@ -70,6 +70,15 @@ def forecast_message(description, temperature, wind):
             f"\n{wind} for today!")
 
 
+def get_coords_and_timezone_from_message(message):
+    database.update_coords(message.location.latitude, message.location.longitude, message.chat.id)
+    response = requests.get(f"https://api.ipgeolocation.io/timezone?apiKey=650c12f9f1ac4ebf9f5fc98aea31362d"
+                            f"&lat={message.location.latitude}&long={message.location.longitude}")
+    data = json.loads(response.content.decode('utf8').replace("'", '"'))
+    timezone = data['timezone_offset']
+    database.update_time_offset(timezone, message.chat.id, )
+
+
 @bot.message_handler(commands=["start"])
 def start(message):
     try:
@@ -103,10 +112,9 @@ def weather_command(message):
     try:
         forecast = obtain_weather(message.chat.id)
         bot.send_message(message.chat.id, forecast_message(**forecast))
-    except TypeError:
-        bot.send_message(message.chat.id, "Nothing is configured yet! Use but bellow to set your location")
-    except KeyError:
-        bot.send_message(message.chat.id, "Nothing is configured yet! Use but bellow to set your location")
+    except TypeError or KeyError:
+        bot.send_message(message.chat.id, "Nothing is configured yet! "
+                                          "Please, send me your location by a menu or using the button bellow:")
 
 
 @bot.message_handler(commands=["stop"],
@@ -122,10 +130,13 @@ def reset_time(message):
 
 @bot.message_handler(commands=["time"])
 def set_time_of_daily_forecast(message):
-    bot.send_message(message.chat.id, "Send me time when I should send you message "
-                                      "with weather forecast using format HH:MM : ",
-                     reply_markup=stop_keyboard)
-    database.set_user_state(3, message.chat.id, )
+    if database.get_current_state(message.from_user.id) == 1:
+        bot.send_message(message.chat.id, "Please, send me your location firstly:", )
+    else:
+        bot.send_message(message.chat.id, "Send me time when I should send you message "
+                                          "with weather forecast using format HH:MM : ",
+                         reply_markup=stop_keyboard)
+        database.set_user_state(3, message.chat.id, )
 
 
 @bot.message_handler(func=lambda message: database.get_current_state(message.from_user.id) == 1)
@@ -134,33 +145,32 @@ def error_location_initialization(message):
                      "Please, send me your location with button bellow:")
 
 
-@bot.message_handler(content_types=['location'],
-                     func=lambda message: database.get_current_state(message.from_user.id) == 1)
-def set_location_firstly(message):
+@bot.message_handler(content_types=['location'],)
+def updating_location(message):
+    get_coords_and_timezone_from_message(message)
 
-    bot.send_message(message.chat.id,
-                     "Thanks a lot! Now just ask me to show me weather with buttons bellow, "
-                     "or you can set time when I should sent you daily forecast:", reply_markup=default_keyboard)
-    database.update_coords(message.location.latitude, message.location.longitude, message.chat.id)
-    database.set_user_state(2, message.chat.id, )
+    if database.get_current_state(message.from_user.id) == 1:
 
+        database.set_user_state(2, message.chat.id, )
+        bot.send_message(message.chat.id,
+                         "Thanks a lot! Now just ask me to show me weather with buttons bellow, "
+                         "or you can set time when I should sent you daily forecast:", reply_markup=default_keyboard)
 
-@bot.message_handler(content_types=['location'],
-                     func=lambda message: database.get_current_state(message.from_user.id) == 2)
-def update_location(message):
-    bot.send_message(message.chat.id, "Your location is updated!")
-    database.update_coords(message.location.latitude, message.location.longitude, message.chat.id)
+    elif database.get_current_state(message.from_user.id) == 2:
+
+        bot.send_message(message.chat.id, "Your location is updated!")
 
 
 @bot.message_handler(func=lambda message: database.get_current_state(message.from_user.id) == 3)
 def time_processing(message):
     if re.match("[0-2][0-9]:[0-5][0-9]", message.text):
-        if int(message.text[0:2]) < 24:
+        if int(message.text[:2]) < 24:
             bot.send_message(message.chat.id, f"Time was successfully set!\n"
                                               f"I'll send you daily forecast everyday at {message.text}. "
                                               f"You can easily discard it with /stop command.",
                              reply_markup=default_keyboard)
-            database.update_time(message.text, message.chat.id)
+            time_with_offset = str(int(message.text[0:2]) + database.get_time_offset(message.chat.id) % 24) + message.text[3:]
+            database.update_time(time_with_offset, message.chat.id, )
             database.set_user_state(2, message.chat.id, )
         else:
             bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
@@ -182,8 +192,7 @@ def time_processing(message):
                      func=lambda message: database.get_current_state(message.from_user.id) in [2, 3])
 def non_commands_responding(message):
     if message.text == weather_button_text:
-        forecast = obtain_weather(message.chat.id)
-        bot.send_message(message.chat.id, forecast_message(**forecast))
+        weather_command(message)
     elif message.text == time_button_text:
         bot.send_message(message.chat.id, "Send me time when I should send you message "
                                           "with weather forecast using format HH:MM",
@@ -211,3 +220,5 @@ if __name__ == "__main__":
     scheduler.add_job(func=time_schedule, trigger="interval", seconds=60)
     scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+    bot.remove_webhook()
+    bot.infinity_polling()

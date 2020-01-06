@@ -169,8 +169,8 @@ def time_processing(message):
                                               f"I'll send you daily forecast everyday at {message.text}. "
                                               f"You can easily discard it with /stop command.",
                              reply_markup=default_keyboard)
-            time_with_offset = str(int(message.text[0:2]) + database.get_time_offset(message.chat.id) % 24) + message.text[3:]
-            database.update_time(time_with_offset, message.chat.id, )
+            scheduled = f"{int(message.text[:2])+database.get_time_offset(message.chat.id) % 24}:{message.text[3:]}"
+            database.update_time(scheduled, message.chat.id, )
             database.set_user_state(2, message.chat.id, )
         else:
             bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"

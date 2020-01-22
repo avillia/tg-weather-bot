@@ -6,6 +6,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import re, json, time
 import requests
 
+#######################################################UX SECTION#######################################################
 
 TOKEN = "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc"
 bot = telebot.TeleBot(TOKEN)
@@ -23,8 +24,9 @@ weatherEncryption = {"01": ("\U00002600", "Sunny"),
                      "50": ("\U0001F32B", "Foggy")}
 
 weather_button_text = "\U00002600 Weather \U000026C5"
-time_button_text = "\U0001F562 Set time of daily forecast \U0001F551"
-stop_button_text = "\U0001F6D1 Stop \U0001F6D1"
+time_button_text = "\U0001F562 New time of daily forecast \U0001F551"
+stop_button_text = "\U0001F6D1 Stop daily forecasts \U0001F6D1"
+cancel_button_text = "\U0000274C Cancel \U0000274C"
 
 location_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 button_geo = types.KeyboardButton(text="\U0001F30E Send location! \U0001F30D", request_location=True)
@@ -33,15 +35,18 @@ location_keyboard.add(button_geo)
 default_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 get_weather_button = types.KeyboardButton(text=weather_button_text, )
 get_time_button = types.KeyboardButton(text=time_button_text, )
+stop_button = types.KeyboardButton(text=stop_button_text, )
 default_keyboard.row(get_weather_button)
 default_keyboard.row(get_time_button)
+default_keyboard.row(stop_button)
 
-stop_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-stop_button = types.KeyboardButton(text=stop_button_text, )
-stop_keyboard.add(stop_button)
+cancel_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+cancel_button = types.KeyboardButton(text=cancel_button_text, )
+cancel_keyboard.add(cancel_button)
 
 empty_keyboard = types.ReplyKeyboardRemove(selective=False)
 
+####################################################HANDY FUNCTIONS#####################################################
 
 def time_schedule():
     current_time = time.asctime().split()[3][0:5]
@@ -59,7 +64,7 @@ def obtain_weather(chat):
     data = json.loads(response.content.decode('utf8').replace("'", '"'))
     forecast = {"description": weatherEncryption[data['weather'][0]['icon'][0:2]],
                 "temperature": (round(data['main']['temp_min']) - 273, round(data['main']['temp_max']) - 273),
-                "wind": "No wind" if data['wind']['speed'] < 0.3 else "Windy"}
+                "wind": "No wind" if data['wind']['speed'] < 4 else "Windy"}
 
     return forecast
 
@@ -78,6 +83,7 @@ def get_coords_and_timezone_from_message(message):
     timezone = data['timezone_offset']
     database.update_time_offset(timezone, message.chat.id, )
 
+#######################################################MAIN MAGIC#######################################################
 
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -107,45 +113,13 @@ def reset(message):
         pass
 
 
-@bot.message_handler(commands=["weather"])
-def weather_command(message):
-    try:
-        forecast = obtain_weather(message.chat.id)
-        bot.send_message(message.chat.id, forecast_message(**forecast))
-    except TypeError or KeyError:
-        bot.send_message(message.chat.id, "Nothing is configured yet! "
-                                          "Please, send me your location by a menu or using the button bellow:")
-
-
-@bot.message_handler(commands=["stop"],
-                     func=lambda message: database.get_current_state(message.from_user.id) in [2, 3])
-def reset_time(message):
-    bot.send_message(message.chat.id, "You've canceled daily forecasts!", reply_markup=default_keyboard)
-    try:
-        database.remove_user_time(message.chat.id)
-        database.set_user_state(2, message.chat.id)
-    except TypeError:
-        pass
-
-
-@bot.message_handler(commands=["time"])
-def set_time_of_daily_forecast(message):
-    if database.get_current_state(message.from_user.id) == 1:
-        bot.send_message(message.chat.id, "Please, send me your location firstly:", )
-    else:
-        bot.send_message(message.chat.id, "Send me time when I should send you message "
-                                          "with weather forecast using format HH:MM : ",
-                         reply_markup=stop_keyboard)
-        database.set_user_state(3, message.chat.id, )
-
-
 @bot.message_handler(func=lambda message: database.get_current_state(message.from_user.id) == 1)
 def error_location_initialization(message):
     bot.send_message(message.chat.id,
                      "Please, send me your location with button bellow:")
 
 
-@bot.message_handler(content_types=['location'],)
+@bot.message_handler(content_types=['location'], )
 def updating_location(message):
     get_coords_and_timezone_from_message(message)
 
@@ -170,34 +144,42 @@ def time_processing(message):
             database.set_user_state(2, message.chat.id, )
             bot.send_message(message.chat.id, f"Time was successfully set!\n"
                                               f"I'll send you daily forecast everyday at {message.text}. "
-                                              f"You can easily discard it with /stop command.",
+                                              f"You can easily discard it with stop button.",
                              reply_markup=default_keyboard)
         else:
             bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
-                                              f"Send time in format HH:MM, for example 19:54 .",)
-    elif message.text == stop_button_text:
-        bot.send_message(message.chat.id, "You've canceled daily forecasts!",
+                                              f"Send time in format HH:MM, for example 19:54 .", )
+    elif message.text == cancel_button_text:
+        bot.send_message(message.chat.id, "Operation cancelled! ",
                          reply_markup=default_keyboard)
-        try:
-            database.remove_user_time(message.chat.id)
-            database.set_user_state(2, message.chat.id)
-        except TypeError:
-            pass
+        database.set_user_state(2, message.chat.id)
     else:
         bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
-                                          f"Send time in format HH:MM, for example 19:54 .",)
+                                          f"Send time in format HH:MM, for example 19:54 .", )
 
 
 @bot.message_handler(content_types=["text"],
                      func=lambda message: database.get_current_state(message.from_user.id) in [2, 3])
 def non_commands_responding(message):
     if message.text == weather_button_text:
-        weather_command(message)
+        try:
+            forecast = obtain_weather(message.chat.id)
+            bot.send_message(message.chat.id, forecast_message(**forecast))
+        except TypeError or KeyError:
+            bot.send_message(message.chat.id, "Nothing is configured yet! "
+                                              "Please, send me your location by a menu or using the button bellow:")
     elif message.text == time_button_text:
         bot.send_message(message.chat.id, "Send me time when I should send you message "
-                                          "with weather forecast using format HH:MM",
-                         reply_markup=stop_keyboard)
+                                          "with weather forecast using format HH:MM : ",
+                         reply_markup=cancel_keyboard)
         database.set_user_state(3, message.chat.id, )
+    elif message.text == stop_button_text:
+        bot.send_message(message.chat.id, "You've canceled daily forecasts!", reply_markup=default_keyboard)
+        try:
+            database.remove_user_time(message.chat.id)
+            database.set_user_state(2, message.chat.id)
+        except TypeError:
+            pass
     else:
         bot.send_message(message.chat.id, "???")
 
@@ -220,3 +202,5 @@ if __name__ == "__main__":
     scheduler.add_job(func=time_schedule, trigger="interval", seconds=60)
     scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+    # bot.remove_webhook()
+    # bot.infinity_polling()

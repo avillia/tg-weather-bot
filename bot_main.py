@@ -5,10 +5,10 @@ from flask import Flask, request
 from apscheduler.schedulers.background import BackgroundScheduler
 import re, json, time
 import requests
+from bot_token import TOKEN
 
 #######################################################UX SECTION#######################################################
 
-TOKEN = "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc"
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 database = SQLighter()
@@ -48,6 +48,7 @@ empty_keyboard = types.ReplyKeyboardRemove(selective=False)
 
 ####################################################HANDY FUNCTIONS#####################################################
 
+
 def time_schedule():
     current_time = time.asctime().split()[3][0:5]
     if current_time in database.get_all_times():
@@ -84,6 +85,7 @@ def get_coords_and_timezone_from_message(message):
     database.update_time_offset(timezone, message.chat.id, )
 
 #######################################################MAIN MAGIC#######################################################
+
 
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -202,5 +204,3 @@ if __name__ == "__main__":
     scheduler.add_job(func=time_schedule, trigger="interval", seconds=60)
     scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
-    # bot.remove_webhook()
-    # bot.infinity_polling()

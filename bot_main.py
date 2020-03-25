@@ -50,12 +50,15 @@ empty_keyboard = types.ReplyKeyboardRemove(selective=False)
 
 def send_bot_update_notification():
     for user in database.get_all_users():
-        bot.send_message(user, "Hey, folks!\n"
-                                "I've been updated, and now have new features:\n"
-                                "✅Enhanced UX\n"
-                                "✅Increased performance\n"
-                                "✅Moved to better hosting, from now scheduling works way much better!\n"
-                                "Thanks for using me!")
+        try:
+            bot.send_message(user, "Hey, folks!\n"
+                                   "I've been updated, and now have new features:\n"
+                                   "✅Enhanced UX\n"
+                                   "✅Increased performance\n"
+                                   "✅Moved to better hosting, from now scheduling works way much better!\n"
+                                   "Thanks for using me!")
+        except TypeError:
+            pass
 
 
 def time_schedule():

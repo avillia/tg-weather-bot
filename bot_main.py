@@ -208,6 +208,7 @@ if __name__ == "__main__":
     scheduler.add_job(func=time_schedule, trigger="interval", seconds=60)
     scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+    # bot.remove_webhook()
     send_bot_update_notification()
-
+    # bot.infinity_polling()
 

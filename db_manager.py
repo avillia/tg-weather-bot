@@ -84,6 +84,11 @@ class SQLighter:
                                 WHERE telegram_id = (?)""", (telegram_id,))
             db.commit()
 
+    def get_all_users(self):
+        with sqlite3.connect(self.db_file) as db:
+            dbcursor = db.cursor()
+            return extract(dbcursor.execute('SELECT telegram_id FROM users',).fetchall())
+
     def get_all_times(self):
         with sqlite3.connect(self.db_file) as db:
             dbcursor = db.cursor()

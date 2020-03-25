@@ -5,11 +5,10 @@ from flask import Flask, request
 from apscheduler.schedulers.background import BackgroundScheduler
 import re, json, time
 import requests
-from bot_token import TOKEN
 
 #######################################################UX SECTION#######################################################
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot("881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc")
 server = Flask(__name__)
 database = SQLighter()
 
@@ -49,6 +48,16 @@ empty_keyboard = types.ReplyKeyboardRemove(selective=False)
 ####################################################HANDY FUNCTIONS#####################################################
 
 
+def send_bot_update_notification():
+    for user in database.get_all_users():
+        bot.send_message(user, "Hey, folks!\n"
+                                "I've been updated, and now have new features:\n"
+                                "✅Enhanced UX\n"
+                                "✅Increased performance\n"
+                                "✅Moved to better hosting, from now scheduling works way much better!\n"
+                                "Thanks for using me!")
+
+
 def time_schedule():
     current_time = time.asctime().split()[3][0:5]
     if current_time in database.get_all_times():
@@ -58,11 +67,9 @@ def time_schedule():
 
 def obtain_weather(chat):
     coords = database.get_current_coords(chat)
-    response = requests.get(
+    data = requests.get(
         f"https://api.openweathermap.org/"
-        f"data/2.5/weather?lat={coords[0]}&lon={coords[1]}&appid=ef1d46cf281271e9a6cd05ac3fc2d2f7")
-
-    data = json.loads(response.content.decode('utf8').replace("'", '"'))
+        f"data/2.5/weather?lat={coords[0]}&lon={coords[1]}&appid=ef1d46cf281271e9a6cd05ac3fc2d2f7").json()
     forecast = {"description": weatherEncryption[data['weather'][0]['icon'][0:2]],
                 "temperature": (round(data['main']['temp_min']) - 273, round(data['main']['temp_max']) - 273),
                 "wind": "No wind" if data['wind']['speed'] < 4 else "Windy"}
@@ -78,9 +85,8 @@ def forecast_message(description, temperature, wind):
 
 def get_coords_and_timezone_from_message(message):
     database.update_coords(message.location.latitude, message.location.longitude, message.chat.id)
-    response = requests.get(f"https://api.ipgeolocation.io/timezone?apiKey=650c12f9f1ac4ebf9f5fc98aea31362d"
-                            f"&lat={message.location.latitude}&long={message.location.longitude}")
-    data = json.loads(response.content.decode('utf8').replace("'", '"'))
+    data = requests.get(f"https://api.ipgeolocation.io/timezone?apiKey=650c12f9f1ac4ebf9f5fc98aea31362d"
+                            f"&lat={message.location.latitude}&long={message.location.longitude}").json()
     timezone = data['timezone_offset']
     database.update_time_offset(timezone, message.chat.id, )
 
@@ -115,26 +121,20 @@ def reset(message):
         pass
 
 
-@bot.message_handler(func=lambda message: database.get_current_state(message.from_user.id) == 1)
-def error_location_initialization(message):
-    bot.send_message(message.chat.id,
-                     "Please, send me your location with button bellow:")
-
-
 @bot.message_handler(content_types=['location'], )
 def updating_location(message):
     get_coords_and_timezone_from_message(message)
 
     if database.get_current_state(message.from_user.id) == 1:
-
         database.set_user_state(2, message.chat.id, )
         bot.send_message(message.chat.id,
                          "Thanks a lot! Now just ask me to show me weather with buttons bellow, "
                          "or you can set time when I should sent you daily forecast:", reply_markup=default_keyboard)
-
     elif database.get_current_state(message.from_user.id) == 2:
-
         bot.send_message(message.chat.id, "Your location is updated!")
+
+    forecast = obtain_weather(message.chat.id)
+    bot.send_message(message.chat.id, forecast_message(**forecast))
 
 
 @bot.message_handler(func=lambda message: database.get_current_state(message.from_user.id) == 3)
@@ -160,33 +160,37 @@ def time_processing(message):
                                           f"Send time in format HH:MM, for example 19:54 .", )
 
 
-@bot.message_handler(content_types=["text"],
-                     func=lambda message: database.get_current_state(message.from_user.id) in [2, 3])
+@bot.message_handler(content_types=["text"])
 def non_commands_responding(message):
-    if message.text == weather_button_text:
-        try:
-            forecast = obtain_weather(message.chat.id)
-            bot.send_message(message.chat.id, forecast_message(**forecast))
-        except TypeError or KeyError:
-            bot.send_message(message.chat.id, "Nothing is configured yet! "
-                                              "Please, send me your location by a menu or using the button bellow:")
-    elif message.text == time_button_text:
-        bot.send_message(message.chat.id, "Send me time when I should send you message "
-                                          "with weather forecast using format HH:MM : ",
-                         reply_markup=cancel_keyboard)
-        database.set_user_state(3, message.chat.id, )
-    elif message.text == stop_button_text:
-        bot.send_message(message.chat.id, "You've canceled daily forecasts!", reply_markup=default_keyboard)
-        try:
-            database.remove_user_time(message.chat.id)
-            database.set_user_state(2, message.chat.id)
-        except TypeError:
-            pass
-    else:
-        bot.send_message(message.chat.id, "???")
+    current_state = database.get_current_state(message.from_user.id)
+    if current_state > 1:
+        if message.text == weather_button_text:
+            try:
+                forecast = obtain_weather(message.chat.id)
+                bot.send_message(message.chat.id, forecast_message(**forecast))
+            except TypeError or KeyError:
+                bot.send_message(message.chat.id, "Nothing is configured yet! "
+                                                  "Please, send me your location by a menu or using the button bellow:")
+        elif message.text == time_button_text:
+            bot.send_message(message.chat.id, "Send me time when I should send you message "
+                                              "with weather forecast using format HH:MM : ",
+                             reply_markup=cancel_keyboard)
+            database.set_user_state(3, message.chat.id, )
+        elif message.text == stop_button_text:
+            bot.send_message(message.chat.id, "You've canceled daily forecasts!", reply_markup=default_keyboard)
+            try:
+                database.remove_user_time(message.chat.id)
+                database.set_user_state(2, message.chat.id)
+            except TypeError:
+                pass
+        else:
+            bot.send_message(message.chat.id, "???")
+    elif current_state == 1:
+        bot.send_message(message.chat.id,
+                         "Please, send me your location with button bellow:")
 
 
-@server.route('/' + TOKEN, methods=['POST'])
+@server.route('/' + "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc", methods=['POST'])
 def getMessage():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "Launched successfully!", 200
@@ -195,7 +199,7 @@ def getMessage():
 @server.route("/")
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url='https://avillia-weather-bot.herokuapp.com/' + TOKEN)
+    bot.set_webhook(url='https://avillia-weather-bot.herokuapp.com/' + "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc")
     return "<b>Deployed and launched successfully!</b>", 200
 
 
@@ -204,3 +208,6 @@ if __name__ == "__main__":
     scheduler.add_job(func=time_schedule, trigger="interval", seconds=60)
     scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+    send_bot_update_notification()
+
+

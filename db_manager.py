@@ -40,8 +40,7 @@ class SQLighter:
 
     def get_current_state(self, telegram_id):
         with sqlite3.connect(self.db_file) as db:
-            dbcursor = db.cursor()
-            return dbcursor.execute('SELECT current_state FROM users WHERE telegram_id = (?)',
+            return db.cursor().execute('SELECT current_state FROM users WHERE telegram_id = (?)',
                                     (telegram_id,)).fetchone()[0]
 
     def update_coords(self, latitude, longitude, telegram_id):
@@ -54,12 +53,11 @@ class SQLighter:
 
     def get_current_coords(self, telegram_id):
         with sqlite3.connect(self.db_file) as db:
-            dbcursor = db.cursor()
-            return dbcursor.execute("""SELECT last_saved_latitude,
+            return db.cursor().execute("""SELECT last_saved_latitude,
                                               last_saved_longitude
                                        FROM users
                                        WHERE telegram_id = (?)""",
-                                    (telegram_id,)).fetchone()
+                                      (telegram_id,)).fetchone()
 
     def update_time(self, time, telegram_id):
         with sqlite3.connect(self.db_file) as db:
@@ -85,19 +83,22 @@ class SQLighter:
             db.commit()
 
     def get_all_users(self):
-        with sqlite3.connect(self.db_file) as db:
-            dbcursor = db.cursor()
-            return extract(dbcursor.execute('SELECT telegram_id FROM users',).fetchall())
+        try:
+            with sqlite3.connect(self.db_file) as db:
+                return extract(db.cursor().execute('SELECT telegram_id FROM users',).fetchall())
+        except TypeError:
+            pass
 
     def get_all_times(self):
-        with sqlite3.connect(self.db_file) as db:
-            dbcursor = db.cursor()
-            return extract(dbcursor.execute('SELECT daily_forecast_time FROM users',).fetchall())
+        try:
+            with sqlite3.connect(self.db_file) as db:
+                return extract(db.cursor().execute('SELECT daily_forecast_time FROM users',).fetchall())
+        except TypeError:
+            pass
 
     def get_users_by_time(self, time):
         with sqlite3.connect(self.db_file) as db:
-            dbcursor = db.cursor()
-            return extract(dbcursor.execute('SELECT telegram_id FROM users WHERE daily_forecast_time = (?)',
+            return extract(db.cursor().execute('SELECT telegram_id FROM users WHERE daily_forecast_time = (?)',
                            (time,)).fetchall())
 
     def update_time_offset(self, time_offset, telegram_id):
@@ -110,6 +111,5 @@ class SQLighter:
 
     def get_time_offset(self, telegram_id):
         with sqlite3.connect(self.db_file) as db:
-            dbcursor = db.cursor()
-            return dbcursor.execute('SELECT time_offset FROM users WHERE telegram_id = (?)',
+            return db.cursor().execute('SELECT time_offset FROM users WHERE telegram_id = (?)',
                                     (telegram_id,)).fetchone()[0]

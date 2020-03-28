@@ -1,10 +1,13 @@
-import telebot
-from telebot import types
-from db_manager import *
-from flask import Flask, request
-from apscheduler.schedulers.background import BackgroundScheduler
-import re, json, time
+import re
 import requests
+import time
+
+import telebot
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Flask, request
+from telebot import types
+
+from db_manager import *
 
 #######################################################UX SECTION#######################################################
 
@@ -121,7 +124,7 @@ def reset(message):
         pass
 
 
-@bot.message_handler(content_types=['location'], )
+@bot.message_handler(content_types=['location'])
 def updating_location(message):
     get_coords_and_timezone_from_message(message)
 
@@ -130,11 +133,13 @@ def updating_location(message):
         bot.send_message(message.chat.id,
                          "Thanks a lot! Now just ask me to show me weather with buttons bellow, "
                          "or you can set time when I should sent you daily forecast:", reply_markup=default_keyboard)
+        forecast = obtain_weather(message.chat.id)
+        bot.send_message(message.chat.id, forecast_message(**forecast))
+
     elif database.get_current_state(message.from_user.id) == 2:
         bot.send_message(message.chat.id, "Your location is updated!")
-
-    forecast = obtain_weather(message.chat.id)
-    bot.send_message(message.chat.id, forecast_message(**forecast))
+        forecast = obtain_weather(message.chat.id)
+        bot.send_message(message.chat.id, forecast_message(**forecast))
 
 
 @bot.message_handler(func=lambda message: database.get_current_state(message.from_user.id) == 3)
@@ -209,6 +214,5 @@ if __name__ == "__main__":
     scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
     # bot.remove_webhook()
-    send_bot_update_notification()
     # bot.infinity_polling()
 

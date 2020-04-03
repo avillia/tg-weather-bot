@@ -215,6 +215,7 @@ if __name__ == "__main__":
     scheduler = BackgroundScheduler()
     scheduler.add_job(func=time_schedule, trigger="interval", seconds=60)
     scheduler.start()
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)), debug=False)
     # bot.remove_webhook()
     # bot.infinity_polling()
+

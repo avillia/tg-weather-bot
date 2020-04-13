@@ -66,7 +66,7 @@ def time_schedule():
 
 def schedule_forecast(user, hours, minute):
     scheduler.add_job(func=lambda: bot.send_message(user, forecast_message(**obtain_weather(user))),
-                      id=user, trigger="cron", hour=hours, minute=minute, replace_existing=True)
+                      id=user, trigger="cron", hour=str(hours), minute=str(minute), replace_existing=True)
 
 
 def obtain_weather(chat):
@@ -154,8 +154,9 @@ def non_commands_responding(message):
                     forecast = obtain_weather(message.chat.id)
                     bot.send_message(message.chat.id, forecast_message(**forecast))
                 except TypeError or KeyError:
-                    bot.send_message(message.chat.id, "Nothing is configured yet! "
-                                                      "Please, send me your location by a menu or using the button bellow:")
+                    bot.send_message(message.chat.id,
+                                     "Nothing is configured yet! "
+                                     "Please, send me your location by a menu or using the button bellow:")
             elif message.text == time_button_text:
                 bot.send_message(message.chat.id, "Send me time when I should send you message "
                                                   "with weather forecast using format HH:MM : ",
@@ -191,7 +192,7 @@ def non_commands_responding(message):
                         raise TypeError
                 except TypeError:
                     bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
-                                                      f"Send time in format HH:MM, for example **19:54**.", )
+                                                      f"Send time in format HH:MM, for example 19:54.", )
         elif current_state == 1:
             bot.send_message(message.chat.id,
                              "Please, send me your location with button bellow:")

@@ -1,6 +1,4 @@
-import re
 import requests
-import time
 
 import telebot
 from telebot import types
@@ -50,7 +48,6 @@ empty_keyboard = types.ReplyKeyboardRemove(selective=False)
 
 ####################################################HANDY FUNCTIONS#####################################################
 
-
 def send_bot_update_notification():
     for user in database.get_all_users():
         bot.send_message(user, "Hey, folks!\n"
@@ -62,10 +59,14 @@ def send_bot_update_notification():
 
 
 def time_schedule():
-    current_time = time.asctime().split()[3][0:5]
-    if current_time in database.get_all_times():
-        for user in database.get_users_by_time(current_time):
-            bot.send_message(user, forecast_message(**obtain_weather(user)))
+    for time in database.get_all_times():
+        for user in database.get_users_by_time(time):
+            schedule_forecast(user=user, hours=time[2:], minute=time[-3:])
+
+
+def schedule_forecast(user, hours, minute):
+    scheduler.add_job(func=lambda: bot.send_message(user, forecast_message(**obtain_weather(user))),
+                      id=user, trigger="cron", hour=hours, minute=minute, replace_existing=True)
 
 
 def obtain_weather(chat):
@@ -92,6 +93,7 @@ def get_coords_and_timezone_from_message(message):
                         f"&lat={message.location.latitude}&long={message.location.longitude}").json()
     timezone = data['timezone_offset'] + (data['dst_savings'] if data['is_dst'] else 0)
     database.update_time_offset(timezone, message.chat.id, )
+
 
 #######################################################MAIN MAGIC#######################################################
 
@@ -146,7 +148,7 @@ def updating_location(message):
 def non_commands_responding(message):
     try:
         current_state = database.get_current_state(message.from_user.id)
-        if current_state in range(1, 3):
+        if current_state == 1 or current_state == 2:
             if message.text == weather_button_text:
                 try:
                     forecast = obtain_weather(message.chat.id)
@@ -169,31 +171,33 @@ def non_commands_responding(message):
             else:
                 bot.send_message(message.chat.id, "???")
         elif current_state == 3:
-            if re.match("[0-2][0-9]:[0-5][0-9]", message.text):
-                if int(message.text[:2]) < 24:
-                    time_with_offset = f"{(int(message.text[:2]) - database.get_time_offset(message.chat.id)) % 24}:{message.text[3:]}"
-                    database.update_time(time_with_offset, message.chat.id, )
-                    database.set_user_state(2, message.chat.id, )
-                    bot.send_message(message.chat.id, f"Time was successfully set!\n"
-                                                      f"I'll send you daily forecast everyday at {message.text}. "
-                                                      f"You can easily discard it with stop button.",
-                                     reply_markup=default_keyboard)
-                else:
-                    bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
-                                                      f"Send time in format HH:MM, for example 19:54 .", )
-            elif message.text == cancel_button_text:
+            if message.text == cancel_button_text:
                 bot.send_message(message.chat.id, "Operation cancelled! ",
                                  reply_markup=default_keyboard)
                 database.set_user_state(2, message.chat.id)
             else:
-                bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
-                                                  f"Send time in format HH:MM, for example 19:54 .", )
+                try:
+                    hours, minutes = [int(i) for i in message.text.split(":")]
+                    if 0 < hours < 24 and 0 < minutes < 60:
+                        time_with_offset = f"{(hours - database.get_time_offset(message.chat.id)) % 24}:{minutes}"
+                        database.update_time(time_with_offset, message.chat.id, )
+                        database.set_user_state(2, message.chat.id, )
+                        bot.send_message(message.chat.id, f"Time was successfully set!\n"
+                                                          f"I'll send you daily forecast everyday at {message.text}. "
+                                                          f"You can easily discard it with stop button.",
+                                         reply_markup=default_keyboard)
+                        schedule_forecast(user=message.chat.id, hours=hours, minute=minutes)
+                    else:
+                        raise TypeError
+                except TypeError:
+                    bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
+                                                      f"Send time in format HH:MM, for example _19:54_.", )
         elif current_state == 1:
             bot.send_message(message.chat.id,
                              "Please, send me your location with button bellow:")
     except TypeError:
         bot.send_message(message.chat.id,
-                         "It seems to me that my creator once again f*cked up with databases, what a shame!"
+                         "It seems to me that my creator once again f*cked up with databases, what a shame!😢"
                          " Please, /restart and /start again.")
 
 
@@ -212,6 +216,6 @@ def webhook():
 
 if __name__ == "__main__":
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=time_schedule, trigger="interval", seconds=60)
+    scheduler.add_job(func=time_schedule, trigger="cron", hour=0, minute=0, )
     scheduler.start()
-    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)), debug=False,)
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)), debug=False, )

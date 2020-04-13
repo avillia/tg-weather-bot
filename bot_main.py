@@ -182,16 +182,16 @@ def non_commands_responding(message):
                         time_with_offset = f"{(hours - database.get_time_offset(message.chat.id)) % 24}:{minutes}"
                         database.update_time(time_with_offset, message.chat.id, )
                         database.set_user_state(2, message.chat.id, )
+                        schedule_forecast(user=message.chat.id, hours=hours, minute=minutes)
                         bot.send_message(message.chat.id, f"Time was successfully set!\n"
                                                           f"I'll send you daily forecast everyday at {message.text}. "
                                                           f"You can easily discard it with stop button.",
                                          reply_markup=default_keyboard)
-                        schedule_forecast(user=message.chat.id, hours=hours, minute=minutes)
                     else:
                         raise TypeError
                 except TypeError:
                     bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
-                                                      f"Send time in format HH:MM, for example _19:54_.", )
+                                                      f"Send time in format HH:MM, for example **19:54**.", )
         elif current_state == 1:
             bot.send_message(message.chat.id,
                              "Please, send me your location with button bellow:")

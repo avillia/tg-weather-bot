@@ -180,8 +180,8 @@ def non_commands_responding(message):
                 try:
                     hours, minutes = [int(i) for i in message.text.split(":")]
                     if 0 < hours < 24 and 0 <= minutes < 60:
-                        time_with_offset = f"{(hours - database.get_time_offset(message.chat.id)) % 24}:{minutes}"
-                        database.update_time(time_with_offset, message.chat.id, )
+                        hours = hours - database.get_time_offset(message.chat.id) % 24
+                        database.update_time(f"{hours}:{minutes}", message.chat.id, )
                         database.set_user_state(2, message.chat.id, )
                         schedule_forecast(user=message.chat.id, hours=hours, minute=minutes)
                         bot.send_message(message.chat.id, f"Time was successfully set!\n"
@@ -220,4 +220,3 @@ if __name__ == "__main__":
     scheduler.add_job(func=time_schedule, trigger="cron", hour=0, minute=0, )
     scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)), debug=False, )
-

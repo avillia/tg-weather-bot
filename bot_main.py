@@ -188,8 +188,8 @@ def non_commands_responding(message):
                                                           f"I'll send you daily forecast everyday at {message.text}. "
                                                           f"You can easily discard it with stop button.",
                                          reply_markup=default_keyboard)
-                    else:
-                        raise TypeError
+                    # else:
+                    #     raise TypeError
                 # except TypeError:
                 #     bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
                 #                                       f"Send time in format HH:MM, for example 19:54.", )

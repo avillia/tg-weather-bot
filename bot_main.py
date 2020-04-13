@@ -179,7 +179,7 @@ def non_commands_responding(message):
             else:
                 try:
                     hours, minutes = [int(i) for i in message.text.split(":")]
-                    if 0 < hours < 24 and 0 < minutes < 60:
+                    if 0 < hours < 24 and 0 <= minutes < 60:
                         time_with_offset = f"{(hours - database.get_time_offset(message.chat.id)) % 24}:{minutes}"
                         database.update_time(time_with_offset, message.chat.id, )
                         database.set_user_state(2, message.chat.id, )
@@ -190,8 +190,7 @@ def non_commands_responding(message):
                                          reply_markup=default_keyboard)
                     else:
                         raise TypeError
-                except TypeError as E:
-                    print(E)
+                except TypeError:
                     bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
                                                       f"Send time in format HH:MM, for example 19:54.", )
         elif current_state == 1:

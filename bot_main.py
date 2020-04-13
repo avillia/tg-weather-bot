@@ -66,7 +66,7 @@ def time_schedule():
 
 def schedule_forecast(user, hours, minute):
     scheduler.add_job(func=lambda: bot.send_message(user, forecast_message(**obtain_weather(user))),
-                      id=user, trigger="cron", hour=str(hours), minute=str(minute), replace_existing=True)
+                      id=str(user), trigger="cron", hour=str(hours), minute=str(minute), replace_existing=True)
 
 
 def obtain_weather(chat):
@@ -177,7 +177,7 @@ def non_commands_responding(message):
                                  reply_markup=default_keyboard)
                 database.set_user_state(2, message.chat.id)
             else:
-                # try:
+                try:
                     hours, minutes = [int(i) for i in message.text.split(":")]
                     if 0 < hours < 24 and 0 < minutes < 60:
                         time_with_offset = f"{(hours - database.get_time_offset(message.chat.id)) % 24}:{minutes}"
@@ -188,11 +188,12 @@ def non_commands_responding(message):
                                                           f"I'll send you daily forecast everyday at {message.text}. "
                                                           f"You can easily discard it with stop button.",
                                          reply_markup=default_keyboard)
-                    # else:
-                    #     raise TypeError
-                # except TypeError:
-                #     bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
-                #                                       f"Send time in format HH:MM, for example 19:54.", )
+                    else:
+                        raise TypeError
+                except TypeError as E:
+                    print(E)
+                    bot.send_message(message.chat.id, f"Invalid time format! Try again.\n"
+                                                      f"Send time in format HH:MM, for example 19:54.", )
         elif current_state == 1:
             bot.send_message(message.chat.id,
                              "Please, send me your location with button bellow:")
@@ -220,3 +221,4 @@ if __name__ == "__main__":
     scheduler.add_job(func=time_schedule, trigger="cron", hour=0, minute=0, )
     scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)), debug=False, )
+

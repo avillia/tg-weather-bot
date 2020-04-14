@@ -110,7 +110,7 @@ class SQLighter:
                 return extract(db.cursor().execute('SELECT daily_forecast_time FROM users WHERE telegram_id = (?)',
                                (user,)).fetchone())
         except TypeError:
-            pass
+            return None
 
     def update_time_offset(self, time_offset, telegram_id):
         with sqlite3.connect(self.db_file) as db:

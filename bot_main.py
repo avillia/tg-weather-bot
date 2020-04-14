@@ -195,13 +195,14 @@ def non_commands_responding(message):
                 try:
                     hours, minutes = [int(i) for i in message.text.split(":")]
                     if 0 < hours < 24 and 0 <= minutes < 60:
+                        time = f"{hours}:{minutes:02d}"
                         hours = hours - database.get_time_offset(message.chat.id) % 24
                         database.update_time(f"{hours}:{minutes:02d}", message.chat.id, )
                         database.set_user_state(2, message.chat.id, )
                         schedule_forecast(user=message.chat.id, hours=hours, minute=minutes)
                         bot.send_message(message.chat.id,
                                          f"Time was successfully set!\n"
-                                         f"I'll send you daily forecast everyday at {message.text}. "
+                                         f"I'll send you daily forecast everyday at {time}. "
                                          f"You can easily discard it with stop button.",
                                          reply_markup=default_keyboard)
                     else:

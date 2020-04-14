@@ -203,7 +203,7 @@ def non_commands_responding(message):
                                          reply_markup=default_keyboard)
                     else:
                         raise ValueError
-                except TypeError or ValueError:
+                except ValueError:
                     bot.send_message(message.chat.id,
                                      f"Invalid time format! Try again.\n"
                                      f"Send time in format HH:MM, for example 19:54.", )

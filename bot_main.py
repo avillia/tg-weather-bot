@@ -170,9 +170,11 @@ def non_commands_responding(message):
             elif message.text == scheduled_button_text:
                 scheduled_info_message = database.get_time_by_user(message.chat.id)
                 if scheduled_info_message:
+                    hours, minutes = [int(i) for i in scheduled_info_message.split(":")]
+                    hours = hours + database.get_time_offset(message.chat.id) % 24
                     bot.send_message(message.chat.id,
                                      f"You've scheduled your forecast for "
-                                     f"{scheduled_info_message} "
+                                     f"{hours}:{minutes:02d} "
                                      f"\U0001f564",
                                      reply_markup=default_keyboard, )
                 else:
@@ -193,7 +195,7 @@ def non_commands_responding(message):
                     hours, minutes = [int(i) for i in message.text.split(":")]
                     if 0 < hours < 24 and 0 <= minutes < 60:
                         hours = hours - database.get_time_offset(message.chat.id) % 24
-                        database.update_time(f"{hours}:{minutes}", message.chat.id, )
+                        database.update_time(f"{hours}:{minutes:02d}", message.chat.id, )
                         database.set_user_state(2, message.chat.id, )
                         schedule_forecast(user=message.chat.id, hours=hours, minute=minutes)
                         bot.send_message(message.chat.id,

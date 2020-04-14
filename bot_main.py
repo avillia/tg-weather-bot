@@ -150,7 +150,8 @@ def non_commands_responding(message):
             if message.text == weather_button_text:
                 try:
                     forecast = obtain_weather(message.chat.id)
-                    bot.send_message(message.chat.id, forecast_message(**forecast))
+                    bot.send_message(message.chat.id, forecast_message(**forecast),
+                                     reply_markup=cancel_keyboard, )
                 except TypeError or KeyError:
                     bot.send_message(message.chat.id,
                                      "Nothing is configured yet! "
@@ -161,18 +162,25 @@ def non_commands_responding(message):
                 bot.send_message(message.chat.id,
                                  "Send me time when I should send you message "
                                  "with weather forecast using format HH:MM : ",
-                                 reply_markup=cancel_keyboard)
+                                 reply_markup=cancel_keyboard, )
             elif message.text == stop_button_text:
                 bot.send_message(message.chat.id,
                                  "You've canceled daily forecasts!",
-                                 reply_markup=default_keyboard)
+                                 reply_markup=default_keyboard, )
                 database.remove_user_time(message.chat.id)
             elif message.text == scheduled_button_text:
-                bot.send_message(message.chat.id,
-                                 f"You've scheduled your forecast for"
-                                 f"{database.get_time_by_user(message.chat.id)}"
-                                 f"\U0001f564",
-                                 reply_markup=default_keyboard)
+                scheduled_info_message = database.get_time_by_user(message.chat.id)
+                if scheduled_button_text:
+                    bot.send_message(message.chat.id,
+                                     f"You've scheduled your forecast for"
+                                     f"{scheduled_info_message}"
+                                     f"\U0001f564",
+                                     reply_markup=default_keyboard, )
+                else:
+                    bot.send_message(message.chat.id,
+                                     f"No scheduled forecasts... yet! "
+                                     f"\U0001f564",
+                                     reply_markup=default_keyboard, )
             else:
                 bot.send_message(message.chat.id, "???")
         elif current_state == 3:

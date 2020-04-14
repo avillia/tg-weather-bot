@@ -68,12 +68,15 @@ class SQLighter:
             db.commit()
 
     def remove_user_time(self, telegram_id):
-        with sqlite3.connect(self.db_file) as db:
-            dbcursor = db.cursor()
-            dbcursor.execute("""UPDATE users 
-                                SET daily_forecast_time = NULL
-                                WHERE telegram_id = (?)""", (telegram_id,))
-            db.commit()
+        try:
+            with sqlite3.connect(self.db_file) as db:
+                dbcursor = db.cursor()
+                dbcursor.execute("""UPDATE users 
+                                    SET daily_forecast_time = NULL
+                                    WHERE telegram_id = (?)""", (telegram_id,))
+                db.commit()
+        except:
+            pass
 
     def reset_user(self, telegram_id):
         with sqlite3.connect(self.db_file) as db:
@@ -100,6 +103,14 @@ class SQLighter:
         with sqlite3.connect(self.db_file) as db:
             return extract(db.cursor().execute('SELECT telegram_id FROM users WHERE daily_forecast_time = (?)',
                            (time,)).fetchall())
+
+    def get_time_by_user(self, user):
+        try:
+            with sqlite3.connect(self.db_file) as db:
+                return extract(db.cursor().execute('SELECT daily_forecast_time FROM users WHERE telegram_id = (?)',
+                               (user,)).fetchone())
+        except TypeError:
+            pass
 
     def update_time_offset(self, time_offset, telegram_id):
         with sqlite3.connect(self.db_file) as db:

@@ -169,7 +169,7 @@ def non_commands_responding(message):
                 database.remove_user_time(message.chat.id)
             elif message.text == scheduled_button_text:
                 scheduled_info_message = database.get_time_by_user(message.chat.id)
-                if scheduled_button_text:
+                if scheduled_info_message:
                     bot.send_message(message.chat.id,
                                      f"You've scheduled your forecast for "
                                      f"{scheduled_info_message} "

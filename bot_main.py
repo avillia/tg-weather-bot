@@ -193,7 +193,7 @@ def non_commands_responding(message):
             else:
                 try:
                     hours, minutes = [int(i) for i in message.text.split(":")]
-                    if 0 < hours < 24 and 0 <= minutes < 60:
+                    if 0 <= hours < 24 and 0 <= minutes < 60:
                         time = f"{hours}:{minutes:02d}"
                         hours = hours - database.get_time_offset(message.chat.id) % 24
                         database.update_time(f"{hours}:{minutes:02d}", message.chat.id, )

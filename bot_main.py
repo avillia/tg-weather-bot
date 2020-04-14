@@ -6,11 +6,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, request
 
 from db_manager import *
-from bot_token import TOKEN
 
 #######################################################UX SECTION#######################################################
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot("881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc")
 server = Flask(__name__)
 database = SQLighter()
 
@@ -215,7 +214,7 @@ def non_commands_responding(message):
                          "Please, /restart and /start again.")
 
 
-@server.route('/' + TOKEN, methods=['POST'])
+@server.route('/' + "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc", methods=['POST'])
 def getMessage():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "Launched successfully!", 200
@@ -225,7 +224,7 @@ def getMessage():
 def webhook():
     bot.remove_webhook()
     bot.set_webhook(url="https://avillia-weather-bot.herokuapp.com/" +
-                        TOKEN)
+                        "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc")
     return "<b>Deployed and launched successfully!</b>", 200
 
 

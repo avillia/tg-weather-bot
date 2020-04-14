@@ -194,9 +194,10 @@ def non_commands_responding(message):
                 try:
                     hours, minutes = [int(i) for i in message.text.split(":")]
                     if 0 <= hours < 24 and 0 <= minutes < 60:
-                        time = f"{hours}:{minutes:02d}"
-                        hours = hours - database.get_time_offset(message.chat.id) % 24
-                        database.update_time(f"{hours}:{minutes:02d}", message.chat.id, )
+                        time = f"{hours:02d}:{minutes:02d}"
+                        hours = f"{((hours - database.get_time_offset(message.chat.id)) % 24):02d}"
+                        minutes = f"{minutes:02d}"
+                        database.update_time(f"{hours}:{minutes}",message.chat.id, )
                         schedule_forecast(user=message.chat.id, hours=hours, minute=minutes, )
                         database.set_user_state(2, message.chat.id, )
                         bot.send_message(message.chat.id,
@@ -236,3 +237,5 @@ if __name__ == "__main__":
     scheduler.add_job(func=time_schedule, trigger="cron", hour=0, minute=0, )
     scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)), debug=False, )
+    # bot.remove_webhook()
+    # bot.infinity_polling()

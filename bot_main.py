@@ -5,11 +5,12 @@ from telebot import types
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, request
 
+from bot_token import TOKEN
 from db_manager import *
 
 #######################################################UX SECTION#######################################################
 
-bot = telebot.TeleBot("881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc")
+bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 database = SQLighter()
 
@@ -218,7 +219,7 @@ def non_commands_responding(message):
                          "Please, /restart and /start again.")
 
 
-@server.route('/' + "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc", methods=['POST'])
+@server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "Launched successfully!", 200
@@ -228,7 +229,7 @@ def getMessage():
 def webhook():
     bot.remove_webhook()
     bot.set_webhook(url="https://avillia-weather-bot.herokuapp.com/" +
-                        "881112302:AAGkYLGYifiKyUmUrtIvwfIjab01FVn6GFc")
+                        TOKEN)
     return "<b>Deployed and launched successfully!</b>", 200
 
 
@@ -237,5 +238,3 @@ if __name__ == "__main__":
     scheduler.add_job(func=time_schedule, trigger="cron", hour=0, minute=0, )
     scheduler.start()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)), debug=False, )
-    # bot.remove_webhook()
-    # bot.infinity_polling()

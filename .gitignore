@@ -1,4 +1,3 @@
 .idea/
 __pycache__/
-venv/
 bot_token.py

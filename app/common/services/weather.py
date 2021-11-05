@@ -4,15 +4,15 @@ from app.configs import OPENWEATHERMAP_TOKEN
 from app.configs.extensions import openweather_request
 
 weather_map = {
-    "01d": ("\U00002600", "Sunny"),
-    "02d": ("\U0001F324", "Partly cloud"),
-    "03d": ("\U000026C5", "Cloud"),
-    "04d": ("\U00002601", "Broken cloud"),
-    "09d": ("\U0001F327", "Rain"),
-    "10d": ("\U0001F326", "Small rain"),
-    "11d": ("\U000026A1", "Thunderstorm"),
-    "13d": ("\U00002744", "Snow"),
-    "50d": ("\U0001F32B", "Foggy"),
+    "01": ("\U00002600", "Sunny"),
+    "02": ("\U0001F324", "Partly cloud"),
+    "03": ("\U000026C5", "Cloud"),
+    "04": ("\U00002601", "Broken cloud"),
+    "09": ("\U0001F327", "Rain"),
+    "10": ("\U0001F326", "Small rain"),
+    "11": ("\U000026A1", "Thunderstorm"),
+    "13": ("\U00002744", "Snow"),
+    "50": ("\U0001F32B", "Foggy"),
 }
 
 
@@ -48,8 +48,8 @@ def obtain_weather(latitude: float, longitude: float):
     ).json()
 
     return Forecast(
-        weather_map[data["weather"][0]["icon"]][0],
-        weather_map[data["weather"][0]["icon"]][1],
+        weather_map[data["weather"][0]["icon"][:2]][0],
+        weather_map[data["weather"][0]["icon"][:2]][1],
         round(data["main"]["temp_min"]) - 273,
         round(data["main"]["temp_max"]) - 273,
         data["wind"]["speed"],

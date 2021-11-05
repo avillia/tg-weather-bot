@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey
+from sqlalchemy import Column, Integer, Float, String, ForeignKey, Time
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -14,7 +14,7 @@ class User(Base):
     last_latitude = Column(Float, unique=False, nullable=True)
     last_longitude = Column(Float, unique=False, nullable=True)
     timezone = Column(String(32), unique=False, nullable=True)
-    forecasts = relationship("ScheduledForecast", backref="user")
+    forecasts = relationship("ScheduledForecast", back_populates="user")
 
 
 class ScheduledForecast(Base):
@@ -22,8 +22,8 @@ class ScheduledForecast(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    latitude = Column(Float, unique=False)
-    longitude = Column(Float, unique=False)
+    user = relationship("User", back_populates="forecasts")
+    time = Column(Time, unique=False, nullable=False)
 
 
 Base.metadata.create_all(db)

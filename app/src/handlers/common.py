@@ -2,11 +2,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import Message
 
 from app.common.models import User
-from app.common.services.weather import obtain_weather
-from app.common.services.timezone import fetch_timezone
 from app.configs.extensions import Session
 from app.src.fsm import UserState
-from app.src.ui import location_keyboard, default_keyboard
+from app.src.ui import default_keyboard, location_keyboard
 
 
 async def cmd_start(message: Message, state: FSMContext):
@@ -27,17 +25,15 @@ async def cmd_start(message: Message, state: FSMContext):
 
 
 async def not_a_location(message: Message):
-    await message.reply(
-        "Please, send me your location with button bellow:"
-    )
+    await message.reply("Please, send me your location with button bellow:")
 
 
 async def cmd_cancel(message: Message):
     await UserState.forecasting.set()
     await message.reply(
-        "Action cancelled. Something else?",
-        reply_markup=default_keyboard
+        "Action cancelled. Something else?", reply_markup=default_keyboard
     )
+
 
 async def not_found(message: Message):
     await message.reply("???")

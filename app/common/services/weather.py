@@ -30,8 +30,11 @@ class Forecast:
 
     @property
     def temperature(self):
-        return self.temp_min if self.temp_min == self.temp_max else f"{self.temp_min} - {self.temp_max}"
-
+        return (
+            self.temp_min
+            if self.temp_min == self.temp_max
+            else f"{self.temp_min} - {self.temp_max}"
+        )
 
     @property
     def as_message(self):

@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey, Time, UniqueConstraint
+from sqlalchemy import (Column, Float, ForeignKey, Integer, String, Time,
+                        UniqueConstraint)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -19,9 +20,7 @@ class User(Base):
 
 class ScheduledForecast(Base):
     __tablename__ = "scheduled_forecasts"
-    __table_args__ = (
-        UniqueConstraint("user_id", "time", name='user_id_time'),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "time", name="user_id_time"),)
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))

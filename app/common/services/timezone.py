@@ -1,5 +1,3 @@
-import pytz
-
 from app.configs import IPGEOLOCATION_TOKEN
 from app.configs.extensions import ipgeo_request
 

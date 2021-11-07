@@ -2,8 +2,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import Message
 
 from app.common.models import User
-from app.common.services.weather import obtain_weather
 from app.common.services.timezone import fetch_timezone
+from app.common.services.weather import obtain_weather
 from app.configs.extensions import Session
 from app.src.fsm import UserState
 from app.src.ui import default_keyboard
@@ -29,13 +29,8 @@ async def weather_by_location(message: Message, state: FSMContext):
     else:
         text_to_reply = "Your location is updated!"
 
-    await message.reply(
-        text_to_reply,
-        reply_markup=default_keyboard
-    )
-    await message.answer(
-        obtain_weather(latitude, longitude).as_message
-    )
+    await message.reply(text_to_reply, reply_markup=default_keyboard)
+    await message.answer(obtain_weather(latitude, longitude).as_message)
 
 
 async def weather_by_button(message: Message):

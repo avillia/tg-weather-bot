@@ -1,11 +1,11 @@
 from configparser import ConfigParser
 
-from redis import Redis
-from requests_cache import RedisCache
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.redis import RedisJobStore
+from redis import Redis
+from requests_cache import RedisCache
 
 configs = ConfigParser()
 configs.read("config.ini")

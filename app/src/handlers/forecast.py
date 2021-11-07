@@ -18,13 +18,14 @@ async def weather_by_location(message: Message, state: FSMContext):
             user.timezone = fetch_timezone(latitude, longitude)
 
     current_state = await state.get_state()
-    if current_state == UserState.first_geolocation_request:
+    if "first" in current_state:
         text_to_reply = (
             "Thanks a lot! Now just ask me to show me weather "
             "with buttons bellow, or you can set time when "
-            "I should sent you daily forecast:"
+            "I should sent you daily forecast.\n"
+            "\U00002600 Have a nice day! \U00002600"
         )
-        UserState.forecasting.set()
+        await UserState.forecasting.set()
     else:
         text_to_reply = "Your location is updated!"
 

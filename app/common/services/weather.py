@@ -29,10 +29,15 @@ class Forecast:
         return "No wind" if self.speed_of_wind < 4 else "Windy"
 
     @property
+    def temperature(self):
+        return self.temp_min if self.temp_min == self.temp_max else f"{self.temp_min} - {self.temp_max}"
+
+
+    @property
     def as_message(self):
         return (
             f"{self.emoji} {self.description} {self.emoji}\n"
-            f"{self.temp_min} - {self.temp_max} °C"
+            f"{self.temperature} °C\n"
             f"{self.wind} for today!"
         )
 

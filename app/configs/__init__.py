@@ -4,7 +4,7 @@ from redis import Redis
 from requests_cache import RedisCache
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.redis import RedisJobStore
 
 configs = ConfigParser()
@@ -24,7 +24,7 @@ if redis_host:
 else:
     TG_STORAGE = MemoryStorage()
     IPGEO_CACHE = OPENWEATHER_CACHE = "memory"
-    SCHEDULER_JOBS_STORE = SQLAlchemyJobStore(url=DATABASE_URI)
+    SCHEDULER_JOBS_STORE = MemoryJobStore()
 
 tokens = configs["TOKENS"]
 TELEGRAM_BOT_TOKEN = tokens["TELEGRAM_BOT_TOKEN"]

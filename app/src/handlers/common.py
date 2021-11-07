@@ -19,7 +19,7 @@ async def cmd_start(message: Message, state: FSMContext):
             session.add(user)
     await UserState.first_geolocation_request.set()
     await message.reply(
-        "Hello there!\n"
+        "Hello there!\U0001F44B\n"
         "I'm bot that can send you information about weather in your place!"
         "Just send me your location via button under text field:",
         reply_markup=location_keyboard,
@@ -38,3 +38,6 @@ async def cmd_cancel(message: Message):
         "Action cancelled. Something else?",
         reply_markup=default_keyboard
     )
+
+async def not_found(message: Message):
+    await message.reply("???")

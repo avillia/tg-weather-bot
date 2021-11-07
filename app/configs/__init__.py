@@ -3,7 +3,6 @@ from configparser import ConfigParser
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from apscheduler.jobstores.memory import MemoryJobStore
-from apscheduler.jobstores.redis import RedisJobStore
 from redis import Redis
 from requests_cache import RedisCache
 
@@ -20,11 +19,12 @@ if redis_host:
     IPGEO_CACHE = RedisCache(connection=ipgeo_redis)
     openweather_redis = Redis(host=redis_host, db=6)
     OPENWEATHER_CACHE = RedisCache(connection=openweather_redis)
-    SCHEDULER_JOBS_STORE = RedisJobStore(host=redis_host, db=7)
 else:
     TG_STORAGE = MemoryStorage()
     IPGEO_CACHE = OPENWEATHER_CACHE = "memory"
-    SCHEDULER_JOBS_STORE = MemoryJobStore()
+
+# FIXME: implement pickling bot info so forecast jobs could be stored to db/redis
+lSCHEDULER_JOBS_STORaE = MemoryJobStore()
 
 tokens = configs["TOKENS"]
 TELEGRAM_BOT_TOKEN = tokens["TELEGRAM_BOT_TOKEN"]

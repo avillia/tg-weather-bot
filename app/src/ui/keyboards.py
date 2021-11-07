@@ -1,5 +1,4 @@
-from aiogram.types import (KeyboardButton, ReplyKeyboardMarkup,
-                           ReplyKeyboardRemove)
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 button_geo_text = "\U0001F30E Send location! \U0001F30D"
 weather_button_text = "\U00002600 Weather \U000026C5"

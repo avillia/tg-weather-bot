@@ -3,14 +3,20 @@ from aiogram.dispatcher.filters import Text
 from aiogram.types.message import ContentType
 
 from app.src.fsm import UserState
-from app.src.handlers.common import (cmd_cancel, cmd_start, not_a_location,
-                                     not_found)
+from app.src.handlers.common import cmd_cancel, cmd_start, not_a_location, not_found
 from app.src.handlers.forecast import weather_by_button, weather_by_location
-from app.src.handlers.scheduling import (ask_user_time, process_user_input,
-                                         show_user_forecasts,
-                                         updated_list_on_deletion)
-from app.src.ui import (cancel_button_text, forecasts_button_text,
-                        schedule_button_text, weather_button_text)
+from app.src.handlers.scheduling import (
+    ask_user_time,
+    process_user_input,
+    show_user_forecasts,
+    updated_list_on_deletion,
+)
+from app.src.ui import (
+    cancel_button_text,
+    forecasts_button_text,
+    schedule_button_text,
+    weather_button_text,
+)
 from app.src.ui.inlines import forecast_cb
 
 

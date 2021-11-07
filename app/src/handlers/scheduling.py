@@ -9,8 +9,11 @@ from app.common.models import ScheduledForecast, User
 from app.configs.extensions import Session
 from app.src.fsm import UserState
 from app.src.scheduler import schedule_forecast
-from app.src.ui import (cancel_keyboard, default_keyboard,
-                        generate_inline_keyboard_for_forecasts)
+from app.src.ui import (
+    cancel_keyboard,
+    default_keyboard,
+    generate_inline_keyboard_for_forecasts,
+)
 
 
 async def ask_user_time(message: Message):

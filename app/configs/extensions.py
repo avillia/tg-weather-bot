@@ -4,8 +4,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tzlocal import get_localzone
 
-from app.configs import (DATABASE_URI, IPGEO_CACHE, OPENWEATHER_CACHE,
-                         SCHEDULER_JOBS_STORE)
+from app.configs import (
+    DATABASE_URI,
+    IPGEO_CACHE,
+    OPENWEATHER_CACHE,
+    SCHEDULER_JOBS_STORE,
+)
 
 db = create_engine(DATABASE_URI)
 Session = sessionmaker(db)

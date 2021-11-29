@@ -23,8 +23,8 @@ else:
     TG_STORAGE = MemoryStorage()
     IPGEO_CACHE = OPENWEATHER_CACHE = "memory"
 
-# FIXME: implement pickling bot info so forecast jobs could be stored to db/redis
-lSCHEDULER_JOBS_STORaE = MemoryJobStore()
+# TODO: implement pickling bot info so forecast jobs could be stored to db/redis
+SCHEDULER_JOBS_STORE = MemoryJobStore()
 
 tokens = configs["TOKENS"]
 TELEGRAM_BOT_TOKEN = tokens["TELEGRAM_BOT_TOKEN"]

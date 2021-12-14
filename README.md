@@ -10,8 +10,8 @@ Small telegram bot to get weather forecasts.
 3. Paste them in related fields in `configs.ini`
 4. Set up your dbs (however, this step is __optional__, by default data stored in memory):
     1. Set up your db and set `DATABASE_URI` in `configs.ini`
-    2. Set up your redis and set `REDIS_HOST`
+    2. Set up your redis and set `REDIS_HOST` similairly
 5. Run `bot.py`
 
 ## Why it doesn't work on my desktop???
-Ah, and yes, there is no desktop version support, because of using geolocation. And it will probably __never__ come. Only mobile.
+Ah, and yes, there is no desktop version support, because of Telegram doesn't support sending your geolocation from desktop version. And it will probably __never__ come. Only mobile.

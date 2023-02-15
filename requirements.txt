@@ -41,5 +41,5 @@ typing-extensions==3.10.0.2
 tzlocal==2.0.0
 url-normalize==1.4.3
 urllib3==1.26.7
-Werkzeug==0.16.0
+Werkzeug==2.2.3
 yarl==1.7.2
